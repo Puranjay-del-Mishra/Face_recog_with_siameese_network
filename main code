@@ -1,0 +1,25 @@
+from facenet_pytorch import  InceptionResnetV1,MTCNN
+import os
+from PIL import Image
+import tensorflow as tf
+model1=MTCNN(margin=10)
+model2=InceptionResnetV1(pretrained='vggface2').eval()
+temp=Image.open("C:/Users/Puranjay Mishra/Pictures/Camera Roll/siameese network pic/example pic.jpg")
+temp_tensor1 = model1(temp)
+img_embedding1 = model2(temp_tensor1.unsqueeze(0))
+req_img="C:/Users/Puranjay Mishra/Pictures/Camera Roll/disguised Puranjay"
+for img in os.listdir(req_img):
+    req_img = Image.open(os.path.join(req_img, img))
+temp_tensor2=model1(req_img)
+img_embedding2=model2(temp_tensor2.unsqueeze(0))
+L = tf.constant(len(img_embedding1),dtype=tf.float32)
+def embedding_compare(alpha):
+    t=tf.constant(alpha)
+    arr=tf.make_ndarray(tf.make_tensor_proto(tf.subtract(tf.divide(tf.reduce_sum(tf.math.squared_difference(img_embedding1.detach().numpy(), img_embedding2.detach().numpy())), L), t)))
+    if arr.item() < 0:
+        return True
+    return False
+if(embedding_compare(0.72)):
+    print("The two pics are same")
+else:
+    print("The two pics are different")
